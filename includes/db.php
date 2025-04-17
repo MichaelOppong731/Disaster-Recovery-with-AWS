@@ -1,16 +1,36 @@
-<?php
-// Database connection settings
-$servername = "localhost"; // The hostname of the database server
-$username = "root";        // The username to connect to the database
-$password = "";            // The password to connect to the database
-$dbname = "todo_list";     // The name of the database to connect to
+<?php 
+require __DIR__ . '/../vendor/autoload.php'; // Adjust the path if necessary
 
-// Create a new MySQLi object to establish a database connection
+// Initialize dotenv
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+// Now you can use getenv() or $_ENV to access the variables
+$servername = $_ENV['DB_HOST'];
+$username   = $_ENV['DB_USER'];
+$password   = $_ENV['DB_PASS'];
+$dbname     = $_ENV['DB_NAME'];
+// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check if the connection was successful
+// Check if connection works
 if ($conn->connect_error) {
-    // If there is a connection error, output the error message and terminate the script
     die("Connection failed: " . $conn->connect_error);
 }
+// Initialize DB only if empty
+$result = $conn->query("SHOW TABLES");
+if ($result && $result->num_rows === 0) {
+    $sql = file_get_contents("init.sql");
+    if ($conn->multi_query($sql)) {
+        echo "";
+    } else {
+        echo "Error initializing database: " . $conn->error;
+    }
+} else {
+    echo "Database already initialized.\n";
+}
+
+
+
 ?>
+
